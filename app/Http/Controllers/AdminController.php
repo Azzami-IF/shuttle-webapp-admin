@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Models\Seat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Http;
 
 class AdminController extends Controller
 {
@@ -21,46 +20,13 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-        $apiBase = env('REMOTE_API_BASE', 'https://api.ambatu.my.id/api');
-
-        // Try remote API first, fall back to local DB counts when unavailable
-        try {
-            $vehiclesResp = Http::timeout(5)->get($apiBase . '/vehicles');
-            $vehiclesCount = $vehiclesResp->ok() ? count($vehiclesResp->json()) : Vehicle::count();
-
-            $schedulesResp = Http::timeout(5)->get($apiBase . '/schedules');
-            $schedulesCount = $schedulesResp->ok() ? count($schedulesResp->json()) : Schedule::count();
-
-            $bookingsResp = Http::timeout(5)->get($apiBase . '/bookings');
-            $bookingsCount = $bookingsResp->ok() ? count($bookingsResp->json()) : Booking::count();
-
-            $tripsResp = Http::timeout(5)->get($apiBase . '/trips');
-            if ($tripsResp->ok()) {
-                $tripsData = collect($tripsResp->json());
-                $activeTripsCount = $tripsData->whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->count();
-            } else {
-                $activeTripsCount = Trip::whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->count();
-            }
-
-            $usersResp = Http::timeout(5)->get($apiBase . '/users');
-            $driversCount = $usersResp->ok() ? collect($usersResp->json())->where('role', 'driver')->count() : User::where('role', 'driver')->count();
-
-            $stats = [
-                'vehicles' => $vehiclesCount,
-                'schedules' => $schedulesCount,
-                'bookings' => $bookingsCount,
-                'active_trips' => $activeTripsCount,
-                'drivers' => $driversCount,
-            ];
-        } catch (\Throwable $e) {
-            $stats = [
-                'vehicles' => Vehicle::count(),
-                'schedules' => Schedule::count(),
-                'bookings' => Booking::count(),
-                'active_trips' => Trip::whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->count(),
-                'drivers' => User::where('role', 'driver')->count(),
-            ];
-        }
+        $stats = [
+            'vehicles' => Vehicle::count(),
+            'schedules' => Schedule::count(),
+            'bookings' => Booking::count(),
+            'active_trips' => Trip::whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->count(),
+            'drivers' => User::where('role', 'driver')->count(),
+        ];
 
         $recent_bookings = Booking::with(['user', 'schedule'])->latest()->take(5)->get();
         $active_trips = Trip::with(['schedule.vehicle', 'schedule.driver', 'schedule.bookings.user'])->whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->get();
@@ -83,19 +49,6 @@ class AdminController extends Controller
     // Vehicle Management
     public function vehicles(Request $request)
     {
-        $apiBase = env('REMOTE_API_BASE', 'https://api.ambatu.my.id/api');
-
-        // Attempt to fetch from remote API, fallback to local DB
-        try {
-            $resp = Http::timeout(5)->get($apiBase . '/vehicles', $request->all());
-            if ($resp->ok()) {
-                $vehicles = collect($resp->json());
-                return view('admin.vehicles.index', compact('vehicles'));
-            }
-        } catch (\Throwable $e) {
-            // ignore and fallback
-        }
-
         $query = Vehicle::query();
         if ($request->has('search')) {
             $search = $request->get('search');
