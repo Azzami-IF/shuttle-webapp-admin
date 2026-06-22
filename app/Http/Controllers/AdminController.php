@@ -146,7 +146,7 @@ class AdminController extends Controller
 
     public function storeVehicle(Request $request)
     {
-        $request->validate([
+        $this->validate($request, [
             'name' => 'required',
             'license_plate' => 'required|unique:vehicles',
             'capacity' => 'required|integer',
@@ -183,7 +183,7 @@ class AdminController extends Controller
 
     public function updateVehicle(Request $request, Vehicle $vehicle)
     {
-        $request->validate([
+        $this->validate($request, [
             'name' => 'required',
             'license_plate' => 'required|unique:vehicles,license_plate,' . $vehicle->id,
             'capacity' => 'required|integer',
@@ -272,7 +272,7 @@ class AdminController extends Controller
 
     public function storeSchedule(Request $request)
     {
-        $request->validate([
+        $this->validate($request, [
             'vehicle_id' => 'required|exists:vehicles,id',
             'driver_id' => 'required|exists:users,id',
             'origin' => 'required',
@@ -606,7 +606,7 @@ class AdminController extends Controller
 
     public function updateSchedule(Request $request, Schedule $schedule)
     {
-        $request->validate([
+        $this->validate($request, [
             'vehicle_id' => 'required|exists:vehicles,id',
             'driver_id' => 'required|exists:users,id',
             'origin' => 'required',
@@ -632,7 +632,7 @@ class AdminController extends Controller
                     'seat_number' => (string)$i,
                     'status' => 'available',
                 ]);
-            }
+                    $this->validate($request, [
         }
 
         $schedule->update($request->all());
@@ -722,7 +722,7 @@ class AdminController extends Controller
                 })->toArray()
             ];
         });
-
+            $this->validate($request, [
         return response()->json($data);
     }
 }

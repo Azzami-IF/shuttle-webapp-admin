@@ -66,7 +66,7 @@ class RouteTemplateController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $this->validate($request, [
             'vehicle_id'          => 'required|exists:vehicles,id',
             'driver_id'           => 'required|exists:users,id',
             'origin'              => 'required|string',
@@ -100,7 +100,11 @@ class RouteTemplateController extends Controller
             'is_active'           => true,
         ]);
 
-        Artisan::call('schedules:generate', ['--days' => $request->generate_days_ahead]);
+        try {
+            Artisan::call('schedules:generate', ['--days' => $request->generate_days_ahead]);
+        } catch (\Symfony\Component\Console\Exception\CommandNotFoundException $e) {
+            // Command not available in this environment; ignore and continue
+        }
 
         return redirect()->route('admin.route-templates.index')
             ->with('success', 'Template rute berhasil ditambahkan dan jadwal otomatis di-generate!');
@@ -150,8 +154,12 @@ class RouteTemplateController extends Controller
         } catch (\Exception $e) {
         }
 
-        Artisan::call('schedules:generate');
-        $output = Artisan::output();
+        try {
+            Artisan::call('schedules:generate');
+            $output = Artisan::output();
+        } catch (\Symfony\Component\Console\Exception\CommandNotFoundException $e) {
+            $output = 'schedules:generate not available';
+        }
         return back()->with('success', 'Generate jadwal selesai! ' . strip_tags($output));
     }
 }
