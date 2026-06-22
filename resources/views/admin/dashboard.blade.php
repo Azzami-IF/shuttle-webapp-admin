@@ -100,8 +100,8 @@
                         <span class="material-symbols-outlined text-sm">person</span>
                     </div>
                         <div class="flex-1">
-                        <p class="font-bold text-primary text-sm">{{ optional($booking->user)->name ?? '-' }}</p>
-                        <p class="text-xs text-on-surface-variant">{{ optional($booking->schedule)->origin ?? '-' }} → {{ optional($booking->schedule)->destination ?? '-' }}</p>
+                        <p class="font-bold text-primary text-sm">{{ data_get($booking, 'user.name', '-') }}</p>
+                        <p class="text-xs text-on-surface-variant">{{ data_get($booking, 'schedule.origin', '-') }} → {{ data_get($booking, 'schedule.destination', '-') }}</p>
                         <div class="mt-1 text-[10px] text-secondary font-bold uppercase">Berhasil</div>
                     </div>
                 </div>
@@ -117,10 +117,10 @@
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: {!! json_encode($chart_data['labels']) !!},
+                labels: {!! json_encode(data_get($chart_data, 'labels', [])) !!},
                 datasets: [{
                     label: 'Jumlah Booking',
-                    data: {!! json_encode($chart_data['values']) !!},
+                    data: {!! json_encode(data_get($chart_data, 'values', [])) !!},
                     borderColor: '#18281e',
                     backgroundColor: 'rgba(24, 40, 30, 0.1)',
                     fill: true,
