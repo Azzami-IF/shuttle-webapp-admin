@@ -50,7 +50,7 @@
                     <a href="{{ route('admin.vehicles.edit', data_get($vehicle, 'id')) }}" class="text-on-surface-variant hover:text-primary mr-3">
                         <span class="material-symbols-outlined">edit</span>
                     </a>
-                    <form action="{{ route('admin.vehicles.delete', $vehicle->id) }}" method="POST" class="inline">
+                    <form action="{{ route('admin.vehicles.delete', data_get($vehicle, 'id')) }}" method="POST" class="inline">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="text-red-500 hover:text-red-700" onclick="return confirm('Hapus kendaraan ini?')">

@@ -57,7 +57,7 @@
                 <tbody class="divide-y divide-gray-100 text-sm">
                     @forelse($bookings as $booking)
                         <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4 font-semibold uppercase text-xs">#TCK{{ $booking->id }}</td>
+                            <td class="px-6 py-4 font-semibold uppercase text-xs">#TCK{{ data_get($booking, 'id') }}</td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{{ data_get($booking, 'user.name', '-') }}</div>
                                 <div class="text-[10px] text-gray-500 uppercase">{{ $booking->booking_code }}</div>
@@ -86,28 +86,28 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                @if($booking->status === 'pending_payment')
+                                @if(data_get($booking, 'status') === 'pending_payment')
                                     <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-yellow-100 text-yellow-800 uppercase">Pending</span>
-                                @elseif($booking->status === 'pending_verification')
+                                @elseif(data_get($booking, 'status') === 'pending_verification')
                                     <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-800 uppercase">Menunggu Konfirmasi</span>
-                                @elseif($booking->status === 'booked')
+                                @elseif(data_get($booking, 'status') === 'booked')
                                     <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-green-100 text-green-800 uppercase">Lunas</span>
-                                @elseif($booking->status === 'cancelled')
+                                @elseif(data_get($booking, 'status') === 'cancelled')
                                     <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-red-100 text-red-800 uppercase">Batal</span>
-                                @elseif($booking->status === 'completed')
+                                @elseif(data_get($booking, 'status') === 'completed')
                                     <span class="px-2 py-1 text-[10px] font-bold rounded-full bg-blue-100 text-blue-800 uppercase">Selesai</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
-                                    @if($booking->status === 'pending_payment' || $booking->status === 'pending_verification')
-                                        <form action="{{ route('admin.bookings.confirm', $booking->id) }}" method="POST">
+                                    @if(data_get($booking, 'status') === 'pending_payment' || data_get($booking, 'status') === 'pending_verification')
+                                        <form action="{{ route('admin.bookings.confirm', data_get($booking, 'id')) }}" method="POST">
                                             @csrf
                                             <button type="submit" class="bg-green-600 hover:bg-green-700 text-white p-2 rounded-lg transition-all shadow-sm" title="Approve">
                                                 <span class="material-symbols-outlined text-sm block">check</span>
                                             </button>
                                         </form>
-                                        <form action="{{ route('admin.bookings.reject', $booking->id) }}" method="POST">
+                                        <form action="{{ route('admin.bookings.reject', data_get($booking, 'id')) }}" method="POST">
                                             @csrf
                                             <button type="submit" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-lg transition-all shadow-sm" title="Reject"
                                                     onclick="return confirm('Tolak pembayaran ini?')">

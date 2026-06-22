@@ -16,7 +16,7 @@
             </div>
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Email</label>
-                <input name="email" type="email" value="{{ $user->email }}" required class="w-full border px-3 py-2 rounded" />
+                <input name="email" type="email" value="{{ data_get($user, 'email') }}" required class="w-full border px-3 py-2 rounded" />
             </div>
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Role</label>
@@ -28,7 +28,7 @@
             </div>
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Phone</label>
-                <input name="phone" type="text" value="{{ $user->phone }}" class="w-full border px-3 py-2 rounded" />
+                <input name="phone" type="text" value="{{ data_get($user, 'phone') }}" class="w-full border px-3 py-2 rounded" />
             </div>
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Driver Code (optional)</label>

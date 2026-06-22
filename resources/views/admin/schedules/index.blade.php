@@ -52,10 +52,10 @@
                 </td>
                 <td class="px-6 py-4 text-right">
                     <div class="flex items-center justify-end gap-3">
-                        <a href="{{ route('admin.schedules.edit', $schedule->id) }}" class="text-blue-500 hover:text-blue-700">
+                        <a href="{{ route('admin.schedules.edit', data_get($schedule, 'id')) }}" class="text-blue-500 hover:text-blue-700">
                             <span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
                         </a>
-                        <form action="{{ route('admin.schedules.delete', $schedule->id) }}" method="POST" class="inline m-0">
+                        <form action="{{ route('admin.schedules.delete', data_get($schedule, 'id')) }}" method="POST" class="inline m-0">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="text-red-500 hover:text-red-700" onclick="return confirm('Hapus jadwal ini?')">

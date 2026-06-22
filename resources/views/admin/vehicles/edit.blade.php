@@ -11,7 +11,7 @@
     </div>
 
     <div class="glass-card rounded-xl p-8 shadow-lg">
-        <form action="{{ route('admin.vehicles.update', $vehicle->id) }}" method="POST" class="space-y-6">
+        <form action="{{ route('admin.vehicles.update', data_get($vehicle, 'id')) }}" method="POST" class="space-y-6">
             @csrf
             @method('PUT')
             <div>
@@ -21,7 +21,7 @@
 
             <div>
                 <label class="block text-sm font-bold text-primary mb-2">No. Plat</label>
-                <input type="text" name="license_plate" value="{{ $vehicle->license_plate }}" class="w-full border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
+                <input type="text" name="license_plate" value="{{ data_get($vehicle, 'license_plate') }}" class="w-full border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
             </div>
 
             <div>

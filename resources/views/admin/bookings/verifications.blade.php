@@ -41,7 +41,7 @@
                     @forelse($bookings as $booking)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4">
-                                <span class="font-bold text-primary">#TCK{{ $booking->id }}</span>
+                                <span class="font-bold text-primary">#TCK{{ data_get($booking, 'id') }}</span>
                                 <div class="text-[10px] text-gray-400 uppercase mt-1">{{ $booking->booking_code }}</div>
                             </td>
                             <td class="px-6 py-4">
@@ -71,14 +71,14 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
-                                    <form action="{{ route('admin.bookings.confirm', $booking->id) }}" method="POST">
+                                    <form action="{{ route('admin.bookings.confirm', data_get($booking, 'id')) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition-all active:scale-95">
                                             <span class="material-symbols-outlined text-sm">check_circle</span>
                                             Approve
                                         </button>
                                     </form>
-                                    <form action="{{ route('admin.bookings.reject', $booking->id) }}" method="POST">
+                                    <form action="{{ route('admin.bookings.reject', data_get($booking, 'id')) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm transition-all active:scale-95"
                                                 onclick="return confirm('Yakin ingin menolak pembayaran ini? Pesanan akan dibatalkan.')">

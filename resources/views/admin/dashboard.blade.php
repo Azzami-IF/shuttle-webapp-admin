@@ -79,7 +79,7 @@
                             </td>
                             <td class="px-4 py-4 text-sm text-on-surface-variant">{{ optional(optional($trip->schedule)->driver)->name ?? '-' }}</td>
                             <td class="px-4 py-4">
-                                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full font-bold uppercase">{{ $trip->status }}</span>
+                                <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full font-bold uppercase">{{ data_get($trip, 'status') }}</span>
                             </td>
                         </tr>
                         @endforeach

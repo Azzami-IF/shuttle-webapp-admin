@@ -124,7 +124,7 @@
                                     <div class="text-outline text-xs mt-0.5">{{ data_get($template, 'driver.name', '-') }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <form action="{{ route('admin.route-templates.toggle', $template->id) }}" method="POST">
+                                    <form action="{{ route('admin.route-templates.toggle', data_get($template, 'id')) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="inline-flex">
                                             <span class="px-3 py-1 rounded-full text-[10px] font-bold {{ $template->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
@@ -134,7 +134,7 @@
                                     </form>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <form action="{{ route('admin.route-templates.destroy', $template->id) }}" method="POST" onsubmit="return confirm('Hapus template ini?')">
+                                    <form action="{{ route('admin.route-templates.destroy', data_get($template, 'id')) }}" method="POST" onsubmit="return confirm('Hapus template ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-500 hover:bg-red-50 p-2 rounded-full transition">
