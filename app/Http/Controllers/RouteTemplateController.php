@@ -7,6 +7,7 @@ use App\Models\Vehicle;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Schema;
 
 class RouteTemplateController extends Controller
 {
@@ -14,7 +15,13 @@ class RouteTemplateController extends Controller
     {
         $templates = RouteTemplate::with(['vehicle', 'driver'])->orderBy('origin')->get();
         $vehicles  = Vehicle::all();
-        $drivers   = User::where('role', 'driver')->get();
+        // Some hosts may have a users table without a `role` column (legacy).
+        // Safely fall back to selecting drivers by `driver_code` if `role` is missing.
+        if (Schema::hasColumn('users', 'role')) {
+            $drivers = User::where('role', 'driver')->get();
+        } else {
+            $drivers = User::whereNotNull('driver_code')->get();
+        }
         return view('admin.route-templates.index', compact('templates', 'vehicles', 'drivers'));
     }
 
