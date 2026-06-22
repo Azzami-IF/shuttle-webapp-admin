@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'remote_api' => [
+        'base' => env('REMOTE_API_BASE', ''),
+        'token' => env('REMOTE_API_TOKEN', null),
+    ],
+
 ];
