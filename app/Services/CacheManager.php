@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use App\Services\RemoteApi;
 
 class CacheManager
 {
@@ -13,6 +14,15 @@ class CacheManager
     public static function getSchedules()
     {
         return Cache::remember('schedules:all', self::CACHE_DURATION_SHORT, function () {
+            try {
+                $api = new RemoteApi();
+                $r = $api->get('/admin/schedules');
+                if ($r->successful()) {
+                    return collect($r->json('data') ?? $r->json());
+                }
+            } catch (\Exception $e) {
+            }
+
             return \App\Models\Schedule::with(['vehicle', 'driver'])
                 ->select('id', 'vehicle_id', 'driver_id', 'origin', 'destination', 'departure_time', 'estimated_duration', 'price', 'created_at')
                 ->get();
@@ -22,6 +32,14 @@ class CacheManager
     public static function getVehicles()
     {
         return Cache::remember('vehicles:all', self::CACHE_DURATION_MEDIUM, function () {
+            try {
+                $api = new RemoteApi();
+                $r = $api->get('/admin/vehicles');
+                if ($r->successful()) {
+                    return collect($r->json('data') ?? $r->json());
+                }
+            } catch (\Exception $e) {}
+
             return \App\Models\Vehicle::select('id', 'name', 'license_plate', 'capacity', 'created_at')->get();
         });
     }
@@ -29,6 +47,14 @@ class CacheManager
     public static function getDashboardStats()
     {
         return Cache::remember('dashboard:stats', self::CACHE_DURATION_SHORT, function () {
+            try {
+                $api = new RemoteApi();
+                $r = $api->get('/admin/dashboard/stats');
+                if ($r->successful()) {
+                    return $r->json('data') ?? $r->json();
+                }
+            } catch (\Exception $e) {}
+
             return [
                 'total_vehicles' => \App\Models\Vehicle::count(),
                 'total_schedules' => \App\Models\Schedule::count(),
