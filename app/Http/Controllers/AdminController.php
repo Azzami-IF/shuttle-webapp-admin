@@ -359,7 +359,7 @@ class AdminController extends Controller
 
     public function storeUser(Request $request)
     {
-        $request->validate([
+        $this->validate($request, [
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'role' => 'required|in:customer,driver,admin',
@@ -394,7 +394,7 @@ class AdminController extends Controller
 
     public function updateUser(Request $request, \App\Models\User $user)
     {
-        $request->validate([
+        $this->validate($request, [
             'name' => 'required',
             'email' => 'required|email|unique:users,email,'.$user->id,
             'role' => 'required|in:customer,driver,admin',
