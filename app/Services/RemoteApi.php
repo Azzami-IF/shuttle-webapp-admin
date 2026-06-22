@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use App\Services\ApiResponseNormalizer;
 
 class RemoteApi
 {
@@ -33,14 +34,42 @@ class RemoteApi
         return $this->client()->get(ltrim($path, '/'), $query);
     }
 
+    /**
+     * Perform GET and return normalized JSON (objects/collections)
+     */
+    public function getJsonNormalized(string $path, array $query = [])
+    {
+        $r = $this->get($path, $query);
+        $json = $r->json();
+        return ApiResponseNormalizer::normalize($json);
+    }
+
     public function post(string $path, array $data = [])
     {
         return $this->client()->post(ltrim($path, '/'), $data);
     }
 
+    /**
+     * Perform POST and return normalized JSON
+     */
+    public function postJsonNormalized(string $path, array $data = [])
+    {
+        $r = $this->post($path, $data);
+        return ApiResponseNormalizer::normalize($r->json());
+    }
+
     public function put(string $path, array $data = [])
     {
         return $this->client()->put(ltrim($path, '/'), $data);
+    }
+
+    /**
+     * Perform PUT and return normalized JSON
+     */
+    public function putJsonNormalized(string $path, array $data = [])
+    {
+        $r = $this->put($path, $data);
+        return ApiResponseNormalizer::normalize($r->json());
     }
 
     public function delete(string $path)

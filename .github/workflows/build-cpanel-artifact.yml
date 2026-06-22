@@ -1,0 +1,55 @@
+name: Build cPanel deployable artifact
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, PDO, pdo_mysql
+
+    - name: Validate composer
+      run: composer --version
+
+    - name: Install composer dependencies
+      run: composer install --no-dev --optimize-autoloader --no-interaction
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install npm packages
+      run: |
+        npm ci
+
+    - name: Build frontend assets
+      run: npm run build
+
+    - name: Create deploy artifact
+      run: |
+        mkdir -p artifact
+        cp -r vendor artifact/vendor
+        cp -r public artifact/public
+        cp -r bootstrap artifact/bootstrap
+        cp -r app artifact/app
+        cp -r resources artifact/resources
+        cp -r routes artifact/routes
+        cp -r .env.example artifact/.env.example
+        cd artifact && zip -r ../shuttle-admin-panel-artifact.zip .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: shuttle-admin-panel-artifact
+        path: shuttle-admin-panel-artifact.zip
