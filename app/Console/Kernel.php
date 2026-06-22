@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         // register single commands explicitly if needed
         $this->commands([
             \App\Console\Commands\ApiPing::class,
+            \App\Console\Commands\DbDiagCommand::class,
         ]);
     }
 }
