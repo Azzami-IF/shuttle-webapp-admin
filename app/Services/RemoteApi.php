@@ -18,7 +18,10 @@ class RemoteApi
 
     protected function client()
     {
-        $client = Http::baseUrl($this->base)->acceptJson();
+        // Ensure base URL ends with a trailing slash so relative paths
+        // concatenated by the HTTP client resolve correctly.
+        $base = rtrim($this->base, '/') . '/';
+        $client = Http::baseUrl($base)->acceptJson();
         if ($this->token) {
             $client = $client->withToken($this->token);
         }
