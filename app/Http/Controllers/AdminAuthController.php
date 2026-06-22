@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
+use App\Services\RemoteApi;
+use App\Models\User as LocalUser;
 
 class AdminAuthController
 {
@@ -28,23 +30,59 @@ class AdminAuthController
         if (! empty($errors)) {
             return back()->withErrors($errors)->withInput();
         }
-        $credentials = ['email' => $email, 'password' => $password];
+        // Authenticate against remote API
+        try {
+            $api = new RemoteApi();
+            $r = $api->post('/admin/login', ['email' => $email, 'password' => $password]);
+            if ($r->status() === 422) {
+                $json = $r->json();
+                return back()->withErrors($json['errors'] ?? ['email' => 'Invalid credentials'])->withInput();
+            }
+            if (! $r->successful()) {
+                return back()->withErrors(['email' => 'Kredensial tidak cocok atau akses ditolak.'])->withInput();
+            }
 
-        if (Auth::attempt($credentials)) {
+            $payload = $r->json();
+            $remoteUser = $payload['user'] ?? null;
+            $token = $payload['token'] ?? null;
+
+            if (! $remoteUser) {
+                return back()->withErrors(['email' => 'Login gagal: data pengguna tidak ditemukan.'])->withInput();
+            }
+
+            // Upsert local user so Auth::user() works and middleware continues to function
+            $local = LocalUser::updateOrCreate(
+                ['email' => $remoteUser['email']],
+                [
+                    'name' => $remoteUser['name'] ?? ($remoteUser['full_name'] ?? 'Admin'),
+                    'role' => $remoteUser['role'] ?? 'admin',
+                    'phone' => $remoteUser['phone'] ?? null,
+                    'driver_code' => $remoteUser['driver_code'] ?? null,
+                ]
+            );
+
+            // Log the local user in
+            Auth::login($local);
             $request->session()->regenerate();
-            $user = Auth::user();
-            if (($user->role ?? '') !== 'admin') {
+            if ($token) {
+                $request->session()->put('admin_api_token', $token);
+            }
+
+            if (($local->role ?? '') !== 'admin') {
                 Auth::logout();
                 return back()->withErrors(['email' => 'Akun tidak memiliki akses admin.']);
             }
-            return redirect()->intended(route('admin.dashboard'));
-        }
 
-        return back()->withErrors(['email' => 'Kredensial tidak cocok.']);
+            return redirect()->intended(route('admin.dashboard'));
+        } catch (\Exception $e) {
+            return back()->withErrors(['email' => 'Kesalahan saat mencoba masuk: ' . $e->getMessage()])->withInput();
+        }
     }
 
     public function logout(Request $request)
     {
+        // Clear session token used for remote API and log out locally
+        $request->session()->forget('admin_api_token');
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

@@ -12,7 +12,8 @@ class RemoteApi
     public function __construct()
     {
         $this->base = rtrim(config('services.remote_api.base', env('REMOTE_API_BASE', '')) , '/');
-        $this->token = config('services.remote_api.token', env('REMOTE_API_TOKEN', null));
+        // Prefer session token for logged-in admin, fall back to configured token
+        $this->token = session('admin_api_token') ?: config('services.remote_api.token', env('REMOTE_API_TOKEN', null));
     }
 
     protected function client()
