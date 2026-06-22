@@ -632,7 +632,7 @@ class AdminController extends Controller
                     'seat_number' => (string)$i,
                     'status' => 'available',
                 ]);
-                    $this->validate($request, [
+            }
         }
 
         $schedule->update($request->all());
