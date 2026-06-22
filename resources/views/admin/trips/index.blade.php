@@ -80,25 +80,34 @@
                 <tbody class="divide-y divide-gray-100 text-sm">
                     @forelse($trips as $trip)
                         @php
-                            $latestLoc = $trip->locations->last();
-                        @endphp
-                        <tr class="hover:bg-gray-50 cursor-pointer" onclick="focusTripOnMap({{ $trip->id }})">
-                            <td class="px-6 py-4 font-semibold">#TRP{{ $trip->id }}</td>
+                                $locations = data_get($trip, 'locations', []);
+                                if (is_array($locations)) {
+                                    $latestLoc = count($locations) ? end($locations) : null;
+                                } elseif ($locations instanceof \Illuminate\Support\Collection) {
+                                    $latestLoc = $locations->last();
+                                } else {
+                                    $latestLoc = null;
+                                }
+                            @endphp
+                        <tr class="hover:bg-gray-50 cursor-pointer" onclick="focusTripOnMap({{ data_get($trip, 'id') }})">
+                            <td class="px-6 py-4 font-semibold">#TRP{{ data_get($trip, 'id') }}</td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{{ data_get($trip, 'schedule.driver.name', '-') }}</div>
                                 <div class="text-xs text-gray-500">{{ data_get($trip, 'schedule.vehicle.name', '-') }} ({{ data_get($trip, 'schedule.vehicle.license_plate', '-') }})</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $trip->schedule?->origin }} → {{ $trip->schedule?->destination }}</div>
+                                <div class="font-medium text-gray-900">{{ data_get($trip, 'schedule.origin', '-') }} → {{ data_get($trip, 'schedule.destination', '-') }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-gray-900">{{ \Carbon\Carbon::parse($trip->schedule?->departure_time)->format('H:mm') }}</div>
-                                <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($trip->schedule?->departure_time)->format('d M Y') }}</div>
+                                @php $dt = data_get($trip, 'schedule.departure_time'); @endphp
+                                <div class="text-gray-900">{{ $dt ? \Carbon\Carbon::parse($dt)->format('H:mm') : '-' }}</div>
+                                <div class="text-xs text-gray-500">{{ $dt ? \Carbon\Carbon::parse($dt)->format('d M Y') : '-' }}</div>
                             </td>
                             <td class="px-6 py-4 font-mono text-xs">
                                 @if($latestLoc)
-                                    <span class="text-secondary">{{ $latestLoc->latitude }}, {{ $latestLoc->longitude }}</span>
-                                    <div class="text-[10px] text-gray-400">Update: {{ $latestLoc->created_at->format('H:mm:s') }}</div>
+                                    <span class="text-secondary">{{ data_get($latestLoc, 'latitude', '-') }}, {{ data_get($latestLoc, 'longitude', '-') }}</span>
+                                    @php $ts = data_get($latestLoc, 'created_at'); @endphp
+                                    <div class="text-[10px] text-gray-400">Update: {{ $ts ? \Carbon\Carbon::parse($ts)->format('H:i:s') : '-' }}</div>
                                 @else
                                     <span class="text-gray-400">Belum ada sinyal GPS</span>
                                 @endif

@@ -37,17 +37,18 @@
                     <p class="font-bold text-primary">{{ data_get($user, 'name', '-') }}</p>
                 </td>
                 <td class="px-6 py-4 text-on-surface-variant">
-                    <p>{{ $user->email }}</p>
-                    <p class="text-xs">{{ $user->phone }}</p>
+                    <p>{{ data_get($user, 'email', '-') }}</p>
+                    <p class="text-xs">{{ data_get($user, 'phone', '-') }}</p>
                 </td>
                 <td class="px-6 py-4">
-                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $user->role === 'admin' ? 'bg-red-100 text-red-700' : ($user->role === 'driver' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700') }}">
-                        {{ strtoupper($user->role) }}
+                    @php $role = data_get($user, 'role', 'user'); @endphp
+                    <span class="px-3 py-1 rounded-full text-xs font-bold {{ $role === 'admin' ? 'bg-red-100 text-red-700' : ($role === 'driver' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700') }}">
+                        {{ strtoupper($role) }}
                     </span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <a href="{{ route('admin.users.edit', $user) }}" class="px-3 py-1 bg-secondary-container rounded text-secondary">Edit</a>
-                    <form action="{{ route('admin.users.delete', $user) }}" method="POST" style="display:inline">@csrf @method('DELETE')
+                    <a href="{{ route('admin.users.edit', data_get($user, 'id')) }}" class="px-3 py-1 bg-secondary-container rounded text-secondary">Edit</a>
+                    <form action="{{ route('admin.users.delete', data_get($user, 'id')) }}" method="POST" style="display:inline">@csrf @method('DELETE')
                         <button class="px-3 py-1 bg-red-100 text-red-700 rounded">Hapus</button>
                     </form>
                 </td>

@@ -41,13 +41,13 @@
                     <p class="font-bold text-primary">{{ data_get($vehicle, 'name', '-') }}</p>
                 </td>
                 <td class="px-6 py-4 text-on-surface-variant">
-                    {{ $vehicle->license_plate }}
+                    {{ data_get($vehicle, 'license_plate', '-') }}
                 </td>
                 <td class="px-6 py-4 text-center">
-                    <span class="bg-secondary-container text-secondary px-3 py-1 rounded-full text-xs font-bold">{{ $vehicle->capacity }} Kursi</span>
+                    <span class="bg-secondary-container text-secondary px-3 py-1 rounded-full text-xs font-bold">{{ data_get($vehicle, 'capacity', '-') }} Kursi</span>
                 </td>
                 <td class="px-6 py-4 text-right">
-                    <a href="{{ route('admin.vehicles.edit', $vehicle->id) }}" class="text-on-surface-variant hover:text-primary mr-3">
+                    <a href="{{ route('admin.vehicles.edit', data_get($vehicle, 'id')) }}" class="text-on-surface-variant hover:text-primary mr-3">
                         <span class="material-symbols-outlined">edit</span>
                     </a>
                     <form action="{{ route('admin.vehicles.delete', $vehicle->id) }}" method="POST" class="inline">
