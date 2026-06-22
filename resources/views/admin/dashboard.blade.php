@@ -9,7 +9,7 @@
     <div class="glass-card rounded-xl p-6 flex items-start justify-between">
         <div>
             <p class="text-on-surface-variant text-sm mb-1">Total Booking</p>
-            <h3 class="text-2xl font-bold text-primary">{{ $stats['bookings'] }}</h3>
+            <h3 class="text-2xl font-bold text-primary">{{ data_get($stats, 'bookings', 0) }}</h3>
         </div>
         <div class="bg-secondary-container text-secondary p-3 rounded-xl">
             <span class="material-symbols-outlined">confirmation_number</span>
@@ -18,7 +18,7 @@
     <div class="glass-card rounded-xl p-6 flex items-start justify-between">
         <div>
             <p class="text-on-surface-variant text-sm mb-1">Armada Aktif</p>
-            <h3 class="text-2xl font-bold text-primary">{{ $stats['active_trips'] }} / {{ $stats['vehicles'] }}</h3>
+            <h3 class="text-2xl font-bold text-primary">{{ data_get($stats, 'active_trips', 0) }} / {{ data_get($stats, 'vehicles', 0) }}</h3>
         </div>
         <div class="bg-secondary-container text-secondary p-3 rounded-xl">
             <span class="material-symbols-outlined">directions_bus</span>
@@ -27,7 +27,7 @@
     <div class="glass-card rounded-xl p-6 flex items-start justify-between">
         <div>
             <p class="text-on-surface-variant text-sm mb-1">Jadwal Hari Ini</p>
-            <h3 class="text-2xl font-bold text-primary">{{ $stats['schedules'] }}</h3>
+            <h3 class="text-2xl font-bold text-primary">{{ data_get($stats, 'schedules', 0) }}</h3>
         </div>
         <div class="bg-secondary-container text-secondary p-3 rounded-xl">
             <span class="material-symbols-outlined">event_note</span>
@@ -36,7 +36,7 @@
     <div class="glass-card rounded-xl p-6 flex items-start justify-between">
         <div>
             <p class="text-on-surface-variant text-sm mb-1">Pendapatan Estimasi</p>
-            <h3 class="text-2xl font-bold text-primary">Rp {{ number_format($stats['bookings'] * 85000, 0, ',', '.') }}</h3>
+            <h3 class="text-2xl font-bold text-primary">Rp {{ number_format((data_get($stats, 'bookings', 0) * 85000), 0, ',', '.') }}</h3>
         </div>
         <div class="bg-secondary-container text-secondary p-3 rounded-xl">
             <span class="material-symbols-outlined">payments</span>
