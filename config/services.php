@@ -40,4 +40,8 @@ return [
         'token' => env('REMOTE_API_TOKEN', null),
     ],
 
+    'mapbox' => [
+        'access_token' => env('MAPBOX_ACCESS_TOKEN', ''),
+    ],
+
 ];

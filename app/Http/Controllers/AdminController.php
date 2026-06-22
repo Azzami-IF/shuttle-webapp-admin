@@ -71,6 +71,15 @@ class AdminController extends Controller
             $r = $api->get('/admin/dashboard/revenue');
             if ($r->successful()) {
                 $chart_data = $r->json('data') ?? $r->json();
+
+                // Normalize revenue/daily data to labels/values expected by view
+                if (is_array($chart_data) && isset($chart_data['daily_data'])) {
+                    $daily = collect($chart_data['daily_data']);
+                    $chart_data = [
+                        'labels' => $daily->pluck('date')->map(function($d){ return (string)$d; })->toArray(),
+                        'values' => $daily->pluck('bookings_count')->toArray(),
+                    ];
+                }
             }
         } catch (\Exception $e) {
         }
