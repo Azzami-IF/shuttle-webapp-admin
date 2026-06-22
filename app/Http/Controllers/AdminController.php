@@ -722,7 +722,7 @@ class AdminController extends Controller
                 })->toArray()
             ];
         });
-            $this->validate($request, [
+
         return response()->json($data);
     }
 }
