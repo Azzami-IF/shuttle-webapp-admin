@@ -26,7 +26,7 @@
 
             <div>
                 <label class="block text-sm font-bold text-primary mb-2">Kapasitas Kursi</label>
-                <input type="number" name="capacity" value="{{ $vehicle->capacity }}" class="w-full border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
+                <input type="number" name="capacity" value="{{ data_get($vehicle, 'capacity', 0) }}" class="w-full border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
             </div>
 
             <div class="pt-4">

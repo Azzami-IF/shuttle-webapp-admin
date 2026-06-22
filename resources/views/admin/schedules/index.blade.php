@@ -41,10 +41,11 @@
             @foreach($schedules as $schedule)
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4">
-                    <p class="font-bold text-primary">{{ $schedule->origin }} → {{ $schedule->destination }}</p>
+                    <p class="font-bold text-primary">{{ data_get($schedule, 'origin', '-') }} → {{ data_get($schedule, 'destination', '-') }}</p>
                 </td>
                 <td class="px-6 py-4 text-on-surface-variant">
-                    {{ \Carbon\Carbon::parse($schedule->departure_time)->format('d M Y, H:i') }}
+                    @php $sd = data_get($schedule, 'departure_time'); @endphp
+                    {{ $sd ? \Carbon\Carbon::parse($sd)->format('d M Y, H:i') : '-' }}
                 </td>
                 <td class="px-6 py-4">
                     <p class="text-sm font-medium text-primary">{{ data_get($schedule, 'vehicle.name', '-') }}</p>

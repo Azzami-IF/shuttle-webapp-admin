@@ -60,23 +60,24 @@
                             <td class="px-6 py-4 font-semibold uppercase text-xs">#TCK{{ data_get($booking, 'id') }}</td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{{ data_get($booking, 'user.name', '-') }}</div>
-                                <div class="text-[10px] text-gray-500 uppercase">{{ $booking->booking_code }}</div>
+                                <div class="text-[10px] text-gray-500 uppercase">{{ data_get($booking, 'booking_code', '-') }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $booking->schedule?->origin }} → {{ $booking->schedule?->destination }}</div>
-                                <div class="text-[10px] text-gray-500">{{ \Carbon\Carbon::parse($booking->schedule?->departure_time)->format('d M Y H:mm') }}</div>
+                                <div class="font-medium text-gray-900">{{ data_get($booking, 'schedule.origin', '-') }} → {{ data_get($booking, 'schedule.destination', '-') }}</div>
+                                @php $bdt = data_get($booking, 'schedule.departure_time'); @endphp
+                                <div class="text-[10px] text-gray-500">{{ $bdt ? \Carbon\Carbon::parse($bdt)->format('d M Y H:mm') : '-' }}</div>
                             </td>
                              <td class="px-6 py-4 font-bold text-primary">
-                                Rp {{ number_format($booking->aggregated_total ?? 0, 0, ',', '.') }}
-                                @if($booking->group_count > 1)
-                                    <div class="text-[9px] text-gray-400">({{ $booking->group_count }} Kursi)</div>
+                                Rp {{ number_format(data_get($booking, 'aggregated_total', 0), 0, ',', '.') }}
+                                @if(data_get($booking, 'group_count', 0) > 1)
+                                    <div class="text-[9px] text-gray-400">({{ data_get($booking, 'group_count') }} Kursi)</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                @if($booking->payment_proof)
+                                @if(data_get($booking, 'payment_proof'))
                                     <div class="relative group cursor-pointer w-10 h-10 rounded-lg overflow-hidden border border-gray-200 shadow-sm" 
-                                         onclick="openProofModal('{{ asset('storage/' . $booking->payment_proof) }}')">
-                                        <img src="{{ asset('storage/' . $booking->payment_proof) }}" class="w-full h-full object-cover">
+                                         onclick="openProofModal('{{ asset('storage/' . data_get($booking, 'payment_proof')) }}')">
+                                        <img src="{{ asset('storage/' . data_get($booking, 'payment_proof')) }}" class="w-full h-full object-cover">
                                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 flex items-center justify-center transition-all">
                                             <span class="material-symbols-outlined text-white text-xs opacity-0 group-hover:opacity-100">zoom_in</span>
                                         </div>
@@ -116,8 +117,8 @@
                                         </form>
                                     @endif
 
-                                    <button type="button" class="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-lg transition-all shadow-sm" title="Detail"
-                                            onclick="openDetailModal({{ json_encode($booking->load(['user', 'schedule.vehicle'])) }}, '{{ $booking->aggregated_seats }}', {{ $booking->aggregated_total }})">
+                                        <button type="button" class="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-lg transition-all shadow-sm" title="Detail"
+                                            onclick="openDetailModal({{ json_encode($booking) }}, '{{ data_get($booking, 'aggregated_seats') }}', {{ data_get($booking, 'aggregated_total', 0) }})">
                                         <span class="material-symbols-outlined text-sm block">visibility</span>
                                     </button>
                                 </div>

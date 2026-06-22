@@ -7,7 +7,7 @@
 <div class="max-w-md mx-auto">
     <div class="glass-card p-6">
         <h2 class="text-2xl font-bold mb-4">Edit Pengguna</h2>
-        <form method="POST" action="{{ route('admin.users.update', $user) }}">
+        <form method="POST" action="{{ route('admin.users.update', data_get($user, 'id')) }}">
             @csrf
             @method('PUT')
             <div class="mb-3">
@@ -21,9 +21,9 @@
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Role</label>
                 <select name="role" class="w-full border px-3 py-2 rounded">
-                    <option value="customer" {{ $user->role === 'customer' ? 'selected' : '' }}>Customer</option>
-                    <option value="driver" {{ $user->role === 'driver' ? 'selected' : '' }}>Driver</option>
-                    <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                    <option value="customer" {{ data_get($user, 'role') === 'customer' ? 'selected' : '' }}>Customer</option>
+                    <option value="driver" {{ data_get($user, 'role') === 'driver' ? 'selected' : '' }}>Driver</option>
+                    <option value="admin" {{ data_get($user, 'role') === 'admin' ? 'selected' : '' }}>Admin</option>
                 </select>
             </div>
             <div class="mb-3">
@@ -32,7 +32,7 @@
             </div>
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Driver Code (optional)</label>
-                <input name="driver_code" type="text" value="{{ $user->driver_code }}" class="w-full border px-3 py-2 rounded" />
+                <input name="driver_code" type="text" value="{{ data_get($user, 'driver_code', '') }}" class="w-full border px-3 py-2 rounded" />
             </div>
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Password (kosongkan untuk tetap)</label>

@@ -42,22 +42,26 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4">
                                 <span class="font-bold text-primary">#TCK{{ data_get($booking, 'id') }}</span>
-                                <div class="text-[10px] text-gray-400 uppercase mt-1">{{ $booking->booking_code }}</div>
+                                <div class="text-[10px] text-gray-400 uppercase mt-1">{{ data_get($booking, 'booking_code', '-') }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{{ data_get($booking, 'user.name', '-') }}</div>
                                 <div class="text-xs text-gray-500">{{ data_get($booking, 'user.email', '-') }}</div>
                             </td>
                             <td class="px-6 py-4 font-bold text-primary">
-                                Rp {{ number_format(($booking->total_price ?? $booking->schedule?->price ?? 0) + ($booking->unique_code ?? 0), 0, ',', '.') }}
+                                @php
+                                    $total = data_get($booking, 'total_price', data_get($booking, 'schedule.price', 0)) + data_get($booking, 'unique_code', 0);
+                                @endphp
+                                Rp {{ number_format($total, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4">
-                                @if($booking->payment_proof)
-                                    <div class="relative group cursor-pointer w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm" 
-                                         onclick="openProofModal('{{ asset('storage/' . $booking.payment_proof) }}')">
-                                        <img src="{{ asset('storage/' . $booking->payment_proof) }}" 
-                                             alt="Bukti Transfer" 
-                                             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200">
+                                  @if(data_get($booking, 'payment_proof'))
+                                     @php $proof = data_get($booking, 'payment_proof'); @endphp
+                                     <div class="relative group cursor-pointer w-16 h-16 rounded-lg overflow-hidden border border-gray-200 shadow-sm" 
+                                         onclick="openProofModal('{{ asset('storage/' . $proof) }}')">
+                                        <img src="{{ asset('storage/' . $proof) }}" 
+                                            alt="Bukti Transfer" 
+                                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-200">
                                         <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 flex items-center justify-center transition-all">
                                             <span class="material-symbols-outlined text-white opacity-0 group-hover:opacity-100 scale-75">zoom_in</span>
                                         </div>

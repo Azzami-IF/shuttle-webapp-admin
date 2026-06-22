@@ -111,12 +111,13 @@
                             @foreach($templates as $template)
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-primary">{{ $template->origin }} → {{ $template->destination }}</div>
+                                    <div class="font-bold text-primary">{{ data_get($template, 'origin', '-') }} → {{ data_get($template, 'destination', '-') }}</div>
                                     <div class="flex items-center gap-2 mt-1">
+                                        @php $td = data_get($template, 'departure_time'); @endphp
                                         <span class="bg-secondary-container text-secondary text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                            {{ \Carbon\Carbon::parse($template->departure_time)->format('H:i') }}
+                                            {{ $td ? \Carbon\Carbon::parse($td)->format('H:i') : '-' }}
                                         </span>
-                                        <span class="text-outline text-[10px]">Rp {{ number_format($template->price, 0, ',', '.') }}</span>
+                                        <span class="text-outline text-[10px]">Rp {{ number_format(data_get($template, 'price', 0), 0, ',', '.') }}</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm">
@@ -127,8 +128,8 @@
                                     <form action="{{ route('admin.route-templates.toggle', data_get($template, 'id')) }}" method="POST">
                                         @csrf
                                         <button type="submit" class="inline-flex">
-                                            <span class="px-3 py-1 rounded-full text-[10px] font-bold {{ $template->is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
-                                                {{ $template->is_active ? 'AKTIF' : 'NONAKTIF' }}
+                                            <span class="px-3 py-1 rounded-full text-[10px] font-bold {{ data_get($template, 'is_active') ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
+                                                {{ data_get($template, 'is_active') ? 'AKTIF' : 'NONAKTIF' }}
                                             </span>
                                         </button>
                                     </form>
