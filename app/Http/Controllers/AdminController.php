@@ -8,6 +8,7 @@ use App\Models\Booking;
 use App\Models\Trip;
 use App\Models\User;
 use App\Models\Seat;
+use App\Services\RemoteApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,28 +21,77 @@ class AdminController extends Controller
 
     public function dashboard()
     {
-        $stats = [
-            'vehicles' => Vehicle::count(),
-            'schedules' => Schedule::count(),
-            'bookings' => Booking::count(),
-            'active_trips' => Trip::whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->count(),
-            'drivers' => User::where('role', 'driver')->count(),
-        ];
+        $api = new RemoteApi();
 
-        $recent_bookings = Booking::with(['user', 'schedule'])->latest()->take(5)->get();
-        $active_trips = Trip::with(['schedule.vehicle', 'schedule.driver', 'schedule.bookings.user'])->whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->get();
+        $stats = null;
+        $recent_bookings = null;
+        $active_trips = null;
+        $chart_data = null;
 
-        // Chart Data: Bookings in last 7 days
-        $booking_stats = Booking::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
-            ->where('created_at', '>=', now()->subDays(7))
-            ->groupBy('date')
-            ->orderBy('date')
-            ->get();
+        try {
+            $r = $api->get('/admin/dashboard/stats');
+            if ($r->successful()) {
+                $stats = $r->json('data') ?? $r->json();
+            }
+        } catch (\Exception $e) {
+        }
 
-        $chart_data = [
-            'labels' => $booking_stats->pluck('date'),
-            'values' => $booking_stats->pluck('total'),
-        ];
+        try {
+            $r = $api->get('/admin/dashboard/bookings');
+            if ($r->successful()) {
+                $recent_bookings = collect($r->json('data') ?? $r->json());
+            }
+        } catch (\Exception $e) {
+        }
+
+        try {
+            $r = $api->get('/admin/dashboard/vehicles');
+            if ($r->successful()) {
+                // may be useful in dashboard
+            }
+        } catch (\Exception $e) {
+        }
+
+        // Chart data fallback
+        try {
+            $r = $api->get('/admin/dashboard/revenue');
+            if ($r->successful()) {
+                $chart_data = $r->json('data') ?? $r->json();
+            }
+        } catch (\Exception $e) {
+        }
+
+        // Local fallback if API didn't return data
+        if (is_null($stats)) {
+            $stats = [
+                'vehicles' => Vehicle::count(),
+                'schedules' => Schedule::count(),
+                'bookings' => Booking::count(),
+                'active_trips' => Trip::whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->count(),
+                'drivers' => User::where('role', 'driver')->count(),
+            ];
+        }
+
+        if (is_null($recent_bookings)) {
+            $recent_bookings = Booking::with(['user', 'schedule'])->latest()->take(5)->get();
+        }
+
+        if (is_null($active_trips)) {
+            $active_trips = Trip::with(['schedule.vehicle', 'schedule.driver', 'schedule.bookings.user'])->whereIn('status', ['boarding', 'on-going', 'delayed', 'arrived'])->get();
+        }
+
+        if (is_null($chart_data)) {
+            $booking_stats = Booking::select(DB::raw('DATE(created_at) as date'), DB::raw('count(*) as total'))
+                ->where('created_at', '>=', now()->subDays(7))
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+            $chart_data = [
+                'labels' => $booking_stats->pluck('date'),
+                'values' => $booking_stats->pluck('total'),
+            ];
+        }
 
         return view('admin.dashboard', compact('stats', 'recent_bookings', 'active_trips', 'chart_data'));
     }
