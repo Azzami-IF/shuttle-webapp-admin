@@ -3,6 +3,11 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
 
+// Provide a permissive redirect for requests to /admin (some external links or assets may request /admin)
+Route::get('/admin', function () {
+	return redirect()->to('/');
+});
+
 // Authentication routes (admin project served at admin.ambatu.my.id)
 Route::get('/login', [\App\Http\Controllers\AdminAuthController::class, 'showLogin'])->name('admin.login');
 Route::post('/login', [\App\Http\Controllers\AdminAuthController::class, 'login'])->name('admin.login.post');
