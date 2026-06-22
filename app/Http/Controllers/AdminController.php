@@ -11,6 +11,7 @@ use App\Models\Seat;
 use App\Services\RemoteApi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AdminController extends Controller
 {
@@ -436,6 +437,17 @@ class AdminController extends Controller
     // Booking Monitoring
     public function bookings(Request $request)
     {
+        // Try remote API first
+        $api = new RemoteApi();
+        try {
+            $r = $api->get('/admin/bookings', $request->only('status','search'));
+            if ($r->successful()) {
+                $bookings = collect($r->json('data') ?? $r->json());
+                return view('admin.bookings.index', compact('bookings'));
+            }
+        } catch (\Exception $e) {
+        }
+
         \App\Http\Controllers\BookingController::releaseExpiredBookings();
 
         $query = Booking::with(['user', 'schedule', 'seat']);
@@ -492,7 +504,16 @@ class AdminController extends Controller
 
     public function verifications()
     {
-        // Ambil pemesanan yang statusnya pending_payment (menunggu verifikasi)
+        $api = new RemoteApi();
+        try {
+            $r = $api->get('/admin/bookings', ['status' => 'pending_payment']);
+            if ($r->successful()) {
+                $bookings = collect($r->json('data') ?? $r->json());
+                return view('admin.bookings.verifications', compact('bookings'));
+            }
+        } catch (\Exception $e) {}
+
+        // Fallback local
         $bookings = Booking::with(['user', 'schedule'])
             ->where('status', 'pending_payment')
             ->latest()
@@ -503,7 +524,15 @@ class AdminController extends Controller
 
     public function confirmBookingPayment(Booking $booking)
     {
-        // Approve ALL bookings with the same payment_code
+        $api = new RemoteApi();
+        try {
+            $r = $api->post('/admin/bookings/'.$booking->id.'/approve');
+            if ($r->successful()) {
+                return redirect()->back()->with('success', ($r->json('count') ?? 1) . ' kursi berhasil dikonfirmasi sekaligus.');
+            }
+        } catch (\Exception $e) {}
+
+        // Fallback local
         $bookings = Booking::where('payment_code', $booking->payment_code)->get();
         
         foreach ($bookings as $b) {
@@ -517,7 +546,15 @@ class AdminController extends Controller
 
     public function rejectBookingPayment(Booking $booking)
     {
-        // Reject ALL bookings with the same payment_code
+        $api = new RemoteApi();
+        try {
+            $r = $api->post('/admin/bookings/'.$booking->id.'/cancel');
+            if ($r->successful()) {
+                return redirect()->back()->with('success', ($r->json('count') ?? 1) . ' kursi berhasil ditolak sekaligus.');
+            }
+        } catch (\Exception $e) {}
+
+        // Fallback local
         $bookings = Booking::where('payment_code', $booking->payment_code)->get();
 
         foreach ($bookings as $b) {
@@ -535,6 +572,15 @@ class AdminController extends Controller
     // Trip Monitoring
     public function trips(Request $request)
     {
+        $api = new RemoteApi();
+        try {
+            $r = $api->get('/admin/trips', $request->only('status'));
+            if ($r->successful()) {
+                $trips = collect($r->json('data') ?? $r->json());
+                return view('admin.trips.index', compact('trips'));
+            }
+        } catch (\Exception $e) {}
+
         $query = Trip::with([
             'schedule.vehicle',
             'schedule.driver',
@@ -596,6 +642,57 @@ class AdminController extends Controller
 
     public function activeTripsLocations(Request $request)
     {
+        $api = new RemoteApi();
+        try {
+            // Fetch active trips from API
+            $r = $api->get('/admin/trips', ['status' => 'boarding']);
+            if ($r->successful()) {
+                $trips = collect($r->json('data') ?? $r->json());
+                // For each trip fetch details (includes locations)
+                $detailed = $trips->map(function ($t) use ($api) {
+                    $id = is_array($t) ? ($t['id'] ?? null) : ($t->id ?? null);
+                    if (! $id) return null;
+                    try {
+                        $rr = $api->get('/admin/trips/'.$id);
+                        if ($rr->successful()) return $rr->json();
+                    } catch (\Exception $e) {}
+                    return $t;
+                })->filter();
+
+                // Map to same structure as local fallback
+                $data = collect($detailed)->map(function ($t) {
+                    $schedule = $t['schedule'] ?? (is_object($t) ? $t->schedule ?? null : null);
+                    $locations = $t['locations'] ?? [];
+                    $passengers = [];
+                    if (!empty($schedule['bookings'] ?? null)) {
+                        $passengers = collect($schedule['bookings'])->map(function ($b) {
+                            return [
+                                'name' => $b['user']['name'] ?? ($b['user']->name ?? 'User'),
+                                'seat' => $b['seat']['seat_number'] ?? ($b['seat']->seat_number ?? $b['seat_id'] ?? ''),
+                                'phone' => $b['user']['phone'] ?? ($b['user']->phone ?? ''),
+                            ];
+                        })->toArray();
+                    }
+
+                    return [
+                        'id' => $t['id'] ?? ($t->id ?? null),
+                        'origin' => $schedule['origin'] ?? ($schedule->origin ?? null),
+                        'destination' => $schedule['destination'] ?? ($schedule->destination ?? null),
+                        'driver' => $schedule['driver']['name'] ?? ($schedule->driver->name ?? 'Driver'),
+                        'vehicle' => $schedule['vehicle']['license_plate'] ?? ($schedule->vehicle->license_plate ?? ''),
+                        'status' => $t['status'] ?? ($t->status ?? null),
+                        'locations' => collect($locations)->map(function ($loc) {
+                            return [$loc['latitude'] ?? ($loc->latitude ?? null), $loc['longitude'] ?? ($loc->longitude ?? null)];
+                        })->toArray(),
+                        'passengers' => $passengers,
+                    ];
+                })->values();
+
+                return response()->json($data);
+            }
+        } catch (\Exception $e) {}
+
+        // Local fallback
         $trips = Trip::with([
             'schedule.vehicle',
             'schedule.driver',
