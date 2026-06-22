@@ -38,7 +38,7 @@
             @foreach($vehicles as $vehicle)
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4">
-                    <p class="font-bold text-primary">{{ $vehicle->name }}</p>
+                    <p class="font-bold text-primary">{{ data_get($vehicle, 'name', '-') }}</p>
                 </td>
                 <td class="px-6 py-4 text-on-surface-variant">
                     {{ $vehicle->license_plate }}

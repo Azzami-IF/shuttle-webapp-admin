@@ -30,7 +30,7 @@
                     <select name="vehicle_id" class="w-full border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
                         <option value="">-- Pilih Kendaraan --</option>
                         @foreach($vehicles as $vehicle)
-                            <option value="{{ $vehicle->id }}">{{ $vehicle->name }} ({{ $vehicle->license_plate }}) - Kapasitas: {{ $vehicle->capacity }}</option>
+                            <option value="{{ data_get($vehicle, 'id') }}">{{ data_get($vehicle, 'name', '-') }} ({{ data_get($vehicle, 'license_plate', '-') }}) - Kapasitas: {{ data_get($vehicle, 'capacity', '-') }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -39,7 +39,7 @@
                     <select name="driver_id" class="w-full border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
                         <option value="">-- Pilih Supir --</option>
                         @foreach($drivers as $driver)
-                            <option value="{{ $driver->id }}">{{ $driver->name }}</option>
+                            <option value="{{ data_get($driver, 'id') }}">{{ data_get($driver, 'name', '-') }}</option>
                         @endforeach
                     </select>
                 </div>

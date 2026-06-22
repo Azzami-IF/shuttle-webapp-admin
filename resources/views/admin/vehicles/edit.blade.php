@@ -16,7 +16,7 @@
             @method('PUT')
             <div>
                 <label class="block text-sm font-bold text-primary mb-2">Nama Kendaraan</label>
-                <input type="text" name="name" value="{{ $vehicle->name }}" class="w-full border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
+                <input type="text" name="name" value="{{ data_get($vehicle, 'name', '') }}" class="w-full border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
             </div>
 
             <div>

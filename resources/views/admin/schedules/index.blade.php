@@ -47,8 +47,8 @@
                     {{ \Carbon\Carbon::parse($schedule->departure_time)->format('d M Y, H:i') }}
                 </td>
                 <td class="px-6 py-4">
-                    <p class="text-sm font-medium text-primary">{{ $schedule->vehicle->name }}</p>
-                    <p class="text-xs text-on-surface-variant">Supir: {{ $schedule->driver->name }}</p>
+                    <p class="text-sm font-medium text-primary">{{ data_get($schedule, 'vehicle.name', '-') }}</p>
+                    <p class="text-xs text-on-surface-variant">Supir: {{ data_get($schedule, 'driver.name', '-') }}</p>
                 </td>
                 <td class="px-6 py-4 text-right">
                     <div class="flex items-center justify-end gap-3">

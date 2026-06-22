@@ -59,7 +59,7 @@
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 font-semibold uppercase text-xs">#TCK{{ $booking->id }}</td>
                             <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $booking->user?->name }}</div>
+                                <div class="font-medium text-gray-900">{{ data_get($booking, 'user.name', '-') }}</div>
                                 <div class="text-[10px] text-gray-500 uppercase">{{ $booking->booking_code }}</div>
                             </td>
                             <td class="px-6 py-4">

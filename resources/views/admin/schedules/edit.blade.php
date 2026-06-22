@@ -43,7 +43,7 @@
                     <select name="vehicle_id" class="w-full border border-outline-variant rounded-lg p-3 focus:ring-primary focus:border-primary" required>
                         @foreach($vehicles as $vehicle)
                             <option value="{{ $vehicle->id }}" {{ old('vehicle_id', $schedule->vehicle_id) == $vehicle->id ? 'selected' : '' }}>
-                                {{ $vehicle->name }} ({{ $vehicle->license_plate }}) - Kapasitas: {{ $vehicle->capacity }}
+                                {{ data_get($vehicle, 'name', '-') }} ({{ data_get($vehicle, 'license_plate', '-') }}) - Kapasitas: {{ data_get($vehicle, 'capacity', '-') }}
                             </option>
                         @endforeach
                     </select>

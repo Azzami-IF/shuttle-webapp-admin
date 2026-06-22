@@ -45,8 +45,8 @@
                                 <div class="text-[10px] text-gray-400 uppercase mt-1">{{ $booking->booking_code }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $booking->user?->name }}</div>
-                                <div class="text-xs text-gray-500">{{ $booking->user?->email }}</div>
+                                <div class="font-medium text-gray-900">{{ data_get($booking, 'user.name', '-') }}</div>
+                                <div class="text-xs text-gray-500">{{ data_get($booking, 'user.email', '-') }}</div>
                             </td>
                             <td class="px-6 py-4 font-bold text-primary">
                                 Rp {{ number_format(($booking->total_price ?? $booking->schedule?->price ?? 0) + ($booking->unique_code ?? 0), 0, ',', '.') }}

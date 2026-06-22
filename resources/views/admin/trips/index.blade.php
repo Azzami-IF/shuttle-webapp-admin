@@ -85,8 +85,8 @@
                         <tr class="hover:bg-gray-50 cursor-pointer" onclick="focusTripOnMap({{ $trip->id }})">
                             <td class="px-6 py-4 font-semibold">#TRP{{ $trip->id }}</td>
                             <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $trip->schedule?->driver?->name }}</div>
-                                <div class="text-xs text-gray-500">{{ $trip->schedule?->vehicle?->name }} ({{ $trip->schedule?->vehicle?->license_plate }})</div>
+                                <div class="font-medium text-gray-900">{{ data_get($trip, 'schedule.driver.name', '-') }}</div>
+                                <div class="text-xs text-gray-500">{{ data_get($trip, 'schedule.vehicle.name', '-') }} ({{ data_get($trip, 'schedule.vehicle.license_plate', '-') }})</div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{{ $trip->schedule?->origin }} → {{ $trip->schedule?->destination }}</div>
@@ -218,8 +218,8 @@
                         <tr class="hover:bg-gray-50 cursor-pointer" onclick="focusTripOnMap({{ $trip->id }})">
                             <td class="px-6 py-4 font-semibold">#TRP{{ $trip->id }}</td>
                             <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900">{{ $trip->schedule?->driver?->name }}</div>
-                                <div class="text-xs text-gray-500">{{ $trip->schedule?->vehicle?->name }} ({{ $trip->schedule?->vehicle?->license_plate }})</div>
+                                <div class="font-medium text-gray-900">{{ data_get($trip, 'schedule.driver.name', '-') }}</div>
+                                <div class="text-xs text-gray-500">{{ data_get($trip, 'schedule.vehicle.name', '-') }} ({{ data_get($trip, 'schedule.vehicle.license_plate', '-') }})</div>
                             </td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-gray-900">{{ $trip->schedule?->origin }} → {{ $trip->schedule?->destination }}</div>

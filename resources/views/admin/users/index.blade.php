@@ -34,7 +34,7 @@
             @foreach($users as $user)
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4">
-                    <p class="font-bold text-primary">{{ $user->name }}</p>
+                    <p class="font-bold text-primary">{{ data_get($user, 'name', '-') }}</p>
                 </td>
                 <td class="px-6 py-4 text-on-surface-variant">
                     <p>{{ $user->email }}</p>

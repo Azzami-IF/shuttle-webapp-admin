@@ -12,7 +12,7 @@
             @method('PUT')
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Nama</label>
-                <input name="name" type="text" value="{{ $user->name }}" required class="w-full border px-3 py-2 rounded" />
+                <input name="name" type="text" value="{{ data_get($user, 'name', '') }}" required class="w-full border px-3 py-2 rounded" />
             </div>
             <div class="mb-3">
                 <label class="block text-sm text-gray-700">Email</label>

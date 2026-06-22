@@ -54,7 +54,7 @@
                         <select name="vehicle_id" class="w-full rounded-xl border-outline-variant text-sm focus:ring-secondary focus:border-secondary" required>
                             <option value="">Pilih Armada...</option>
                             @foreach($vehicles as $vehicle)
-                                <option value="{{ $vehicle->id }}">{{ $vehicle->name }} ({{ $vehicle->license_plate }})</option>
+                                <option value="{{ data_get($vehicle, 'id') }}">{{ data_get($vehicle, 'name', '-') }} ({{ data_get($vehicle, 'license_plate', '-') }})</option>
                             @endforeach
                         </select>
                     </div>
@@ -64,7 +64,7 @@
                         <select name="driver_id" class="w-full rounded-xl border-outline-variant text-sm focus:ring-secondary focus:border-secondary" required>
                             <option value="">Pilih Driver...</option>
                             @foreach($drivers as $driver)
-                                <option value="{{ $driver->id }}">{{ $driver->name }}</option>
+                                <option value="{{ data_get($driver, 'id') }}">{{ data_get($driver, 'name', '-') }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -120,8 +120,8 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm">
-                                    <div class="font-medium text-primary">{{ $template->vehicle->name }}</div>
-                                    <div class="text-outline text-xs mt-0.5">{{ $template->driver->name }}</div>
+                                    <div class="font-medium text-primary">{{ data_get($template, 'vehicle.name', '-') }}</div>
+                                    <div class="text-outline text-xs mt-0.5">{{ data_get($template, 'driver.name', '-') }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <form action="{{ route('admin.route-templates.toggle', $template->id) }}" method="POST">
