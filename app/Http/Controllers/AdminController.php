@@ -99,19 +99,48 @@ class AdminController extends Controller
     // Vehicle Management
     public function vehicles(Request $request)
     {
-        $query = Vehicle::query();
-        if ($request->has('search')) {
-            $search = $request->get('search');
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('license_plate', 'like', "%{$search}%");
+        $api = new RemoteApi();
+        $vehicles = null;
+
+        try {
+            $r = $api->get('/admin/vehicles', $request->only('search'));
+            if ($r->successful()) {
+                $vehicles = collect($r->json('data') ?? $r->json());
+            }
+        } catch (\Exception $e) {
         }
-        $vehicles = $query->get();
+
+        if (is_null($vehicles)) {
+            $query = Vehicle::query();
+            if ($request->has('search')) {
+                $search = $request->get('search');
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('license_plate', 'like', "%{$search}%");
+            }
+            $vehicles = $query->get();
+        }
+
         return view('admin.vehicles.index', compact('vehicles'));
     }
 
     public function createVehicle()
     {
-        return view('admin.vehicles.create');
+        // Need drivers list for assignment; prefer remote
+        $api = new RemoteApi();
+        $drivers = null;
+        try {
+            $r = $api->get('/admin/drivers');
+            if ($r->successful()) {
+                $drivers = collect($r->json('data') ?? $r->json());
+            }
+        } catch (\Exception $e) {
+        }
+
+        if (is_null($drivers)) {
+            $drivers = User::where('role', 'driver')->get();
+        }
+
+        return view('admin.vehicles.create', compact('drivers'));
     }
 
     public function storeVehicle(Request $request)
@@ -122,12 +151,32 @@ class AdminController extends Controller
             'capacity' => 'required|integer',
         ]);
 
+        $api = new RemoteApi();
+        try {
+            $r = $api->post('/admin/vehicles', $request->all());
+            if ($r->successful()) {
+                return redirect()->route('admin.vehicles')->with('success', 'Vehicle created successfully');
+            }
+        } catch (\Exception $e) {
+        }
+
         Vehicle::create($request->all());
         return redirect()->route('admin.vehicles')->with('success', 'Vehicle created successfully');
     }
 
     public function editVehicle(Vehicle $vehicle)
     {
+        // Prefer remote vehicle detail
+        $api = new RemoteApi();
+        try {
+            $r = $api->get('/admin/vehicles/'.$vehicle->id);
+            if ($r->successful()) {
+                $remote = $r->json('data') ?? $r->json();
+                return view('admin.vehicles.edit', ['vehicle' => (object)$remote]);
+            }
+        } catch (\Exception $e) {
+        }
+
         return view('admin.vehicles.edit', compact('vehicle'));
     }
 
@@ -139,12 +188,30 @@ class AdminController extends Controller
             'capacity' => 'required|integer',
         ]);
 
+        $api = new RemoteApi();
+        try {
+            $r = $api->put('/admin/vehicles/'.$vehicle->id, $request->all());
+            if ($r->successful()) {
+                return redirect()->route('admin.vehicles')->with('success', 'Vehicle updated successfully');
+            }
+        } catch (\Exception $e) {
+        }
+
         $vehicle->update($request->all());
         return redirect()->route('admin.vehicles')->with('success', 'Vehicle updated successfully');
     }
 
     public function deleteVehicle(Vehicle $vehicle)
     {
+        $api = new RemoteApi();
+        try {
+            $r = $api->delete('/admin/vehicles/'.$vehicle->id);
+            if ($r->successful()) {
+                return redirect()->route('admin.vehicles')->with('success', 'Vehicle deleted successfully');
+            }
+        } catch (\Exception $e) {
+        }
+
         $vehicle->delete();
         return redirect()->route('admin.vehicles')->with('success', 'Vehicle deleted successfully');
     }
@@ -152,23 +219,53 @@ class AdminController extends Controller
     // Schedule Management
     public function schedules(Request $request)
     {
-        $query = Schedule::with(['vehicle', 'driver']);
-
-        if ($request->has('origin')) {
-            $query->where('origin', 'like', "%{$request->get('origin')}%");
+        $api = new RemoteApi();
+        $schedules = null;
+        try {
+            $r = $api->get('/admin/schedules', $request->only('origin','destination'));
+            if ($r->successful()) {
+                $schedules = collect($r->json('data') ?? $r->json());
+            }
+        } catch (\Exception $e) {
         }
-        if ($request->has('destination')) {
-            $query->where('destination', 'like', "%{$request->get('destination')}%");
+
+        if (is_null($schedules)) {
+            $query = Schedule::with(['vehicle', 'driver']);
+
+            if ($request->has('origin')) {
+                $query->where('origin', 'like', "%{$request->get('origin')}%");
+            }
+            if ($request->has('destination')) {
+                $query->where('destination', 'like', "%{$request->get('destination')}%");
+            }
+
+            $schedules = $query->get();
         }
 
-        $schedules = $query->get();
         return view('admin.schedules.index', compact('schedules'));
     }
 
     public function createSchedule()
     {
-        $vehicles = Vehicle::all();
-        $drivers = User::where('role', 'driver')->get();
+        $api = new RemoteApi();
+        $vehicles = null; $drivers = null;
+        try {
+            $r = $api->get('/admin/vehicles');
+            if ($r->successful()) $vehicles = collect($r->json('data') ?? $r->json());
+        } catch (\Exception $e) {}
+        try {
+            $r = $api->get('/admin/drivers');
+            if ($r->successful()) $drivers = collect($r->json('data') ?? $r->json());
+        } catch (\Exception $e) {}
+
+        if (is_null($vehicles)) $vehicles = Vehicle::all();
+        if (is_null($drivers)) {
+            if (Schema::hasColumn('users','role')) {
+                $drivers = User::where('role','driver')->get();
+            } else {
+                $drivers = User::whereNotNull('driver_code')->get();
+            }
+        }
         return view('admin.schedules.create', compact('vehicles', 'drivers'));
     }
 
@@ -181,6 +278,14 @@ class AdminController extends Controller
             'destination' => 'required',
             'departure_time' => 'required|date',
         ]);
+
+        $api = new RemoteApi();
+        try {
+            $r = $api->post('/admin/schedules', $request->all());
+            if ($r->successful()) {
+                return redirect()->route('admin.schedules')->with('success', 'Schedule created successfully');
+            }
+        } catch (\Exception $e) {}
 
         DB::transaction(function () use ($request) {
             $schedule = Schedule::create($request->all());
@@ -207,6 +312,14 @@ class AdminController extends Controller
 
     public function deleteSchedule(Schedule $schedule)
     {
+        $api = new RemoteApi();
+        try {
+            $r = $api->delete('/admin/schedules/'.$schedule->id);
+            if ($r->successful()) {
+                return redirect()->route('admin.schedules')->with('success', 'Schedule deleted successfully');
+            }
+        } catch (\Exception $e) {}
+
         $schedule->delete();
         return redirect()->route('admin.schedules')->with('success', 'Schedule deleted successfully');
     }
@@ -214,14 +327,26 @@ class AdminController extends Controller
     // User/Driver Management
     public function users(Request $request)
     {
-        $query = User::query();
-        if ($request->has('search')) {
-            $search = $request->get('search');
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+        $api = new RemoteApi();
+        $users = null;
+        try {
+            $r = $api->get('/admin/users', $request->only('search'));
+            if ($r->successful()) {
+                $users = collect($r->json('data') ?? $r->json());
+            }
+        } catch (\Exception $e) {}
+
+        if (is_null($users)) {
+            $query = User::query();
+            if ($request->has('search')) {
+                $search = $request->get('search');
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%");
+            }
+            $users = $query->get();
         }
-        $users = $query->get();
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -249,6 +374,14 @@ class AdminController extends Controller
             $data['driver_code'] = 'DRV'.strtoupper(substr(bin2hex(random_bytes(3)),0,6));
         }
 
+        $api = new RemoteApi();
+        try {
+            $r = $api->post('/admin/users', $data + ['password' => $request->password]);
+            if ($r->successful()) {
+                return redirect()->route('admin.users')->with('success','User created');
+            }
+        } catch (\Exception $e) {}
+
         \App\Models\User::create($data);
         return redirect()->route('admin.users')->with('success','User created');
     }
@@ -274,12 +407,28 @@ class AdminController extends Controller
             $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
         }
 
+        $api = new RemoteApi();
+        try {
+            $r = $api->put('/admin/users/'.$user->id, $data + ($request->filled('password') ? ['password' => $request->password] : []));
+            if ($r->successful()) {
+                return redirect()->route('admin.users')->with('success','User updated');
+            }
+        } catch (\Exception $e) {}
+
         $user->update($data);
         return redirect()->route('admin.users')->with('success','User updated');
     }
 
     public function deleteUser(\App\Models\User $user)
     {
+        $api = new RemoteApi();
+        try {
+            $r = $api->delete('/admin/users/'.$user->id);
+            if ($r->successful()) {
+                return redirect()->route('admin.users')->with('success','User deleted');
+            }
+        } catch (\Exception $e) {}
+
         $user->delete();
         return redirect()->route('admin.users')->with('success','User deleted');
     }
