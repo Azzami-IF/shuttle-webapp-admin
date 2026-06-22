@@ -33,6 +33,19 @@ class AdminController extends Controller
             $r = $api->get('/admin/dashboard/stats');
             if ($r->successful()) {
                 $stats = $r->json('data') ?? $r->json();
+
+                // Normalize older/newer API shapes: if backend returns keys like
+                // `total_vehicles` / `total_bookings` map them to keys expected
+                // by the view (`vehicles`, `bookings`, `schedules`, `drivers`).
+                if (is_array($stats) && (isset($stats['total_vehicles']) || isset($stats['total_bookings']))) {
+                    $stats = [
+                        'vehicles' => $stats['total_vehicles'] ?? ($stats['vehicles'] ?? 0),
+                        'schedules' => $stats['total_schedules'] ?? ($stats['schedules'] ?? 0),
+                        'bookings' => $stats['total_bookings'] ?? ($stats['bookings'] ?? 0),
+                        'active_trips' => $stats['active_trips'] ?? ($stats['active_trips'] ?? 0),
+                        'drivers' => $stats['total_drivers'] ?? ($stats['drivers'] ?? 0),
+                    ];
+                }
             }
         } catch (\Exception $e) {
         }
